@@ -6,15 +6,19 @@ ARGP is a software framework that provides analytics services on NGS Data, imple
 
 #### R Shiny packages
 
+```
 install.packages(c("shiny","shinyFiles", "shinyjs", "shinyBS"))
+```
 
 #### Other packages for data processing and visualization
 
+```
 install.packages(c("DT","plyr","dplyr","pryr","data.table","stringr","tidyr","xtable","plot3D","gridExtra","stringdist","plotly"))
 source("http://bioconductor.org/biocLite.R")
 biocLite("Biostrings")
 source("https://bioconductor.org/biocLite.R") 
 biocLite("motifStack")
+```
 
 ##  Run the Application
 
