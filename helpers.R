@@ -86,7 +86,7 @@ testColumnNames<-function(name, files, datapath){
       
       #Check the column names
       for (k in 1:length(used_columns[[b2]])){
-        if (used_columns[[b2]][k] %in% colnames(rawDataSet[[name[i]]])){
+        if ((used_columns[[b2]][k] %in% colnames(rawDataSet[[name[i]]])) || str_detect(used_columns[[b2]][k],".NA") || str_detect(used_columns[[b2]][k],".X")){
           #do nothing
         }else{
           message="wrong column names"
@@ -180,7 +180,7 @@ correctColumnNames <- function(files,rawDataSet, allDatasets, wrong_dataset, new
   filter_column=c(used_columns[["Summary"]][3],used_columns[["Summary"]][18],used_columns[["Summary"]][2],used_columns[["Summary"]][18],used_columns[["Summary"]][4],used_columns[["Summary"]][3], used_columns[["Summary"]][8], used_columns[["Summary"]][11], used_columns[["Summary"]][15], used_columns[["Summary"]][18])
   
   #used columns
-  input<-read.csv("used_columns.csv", sep=";", stringsAsFactors=FALSE,header=F)
+  input<-read.csv("param/used_columns.csv", sep=";", stringsAsFactors=FALSE,header=F)
   
   used_columns<-list()
   all_used_columns<-c()
@@ -228,7 +228,7 @@ correctColumnNames <- function(files,rawDataSet, allDatasets, wrong_dataset, new
   }else{
     correct="no"
   }
-  
+
   # log time end and memory used 
   cat(paste0(Sys.time(),"\t"), file=logFile, append=TRUE)
   cat(pryr::mem_used(), file=logFile, append=TRUE, sep = "\n")
