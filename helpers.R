@@ -164,6 +164,7 @@ testColumnNames<-function(name, files, datapath){
 ######################################################################################################################################
 
 correctColumnNames <- function(files,rawDataSet, allDatasets, wrong_dataset, new_columns=list(), worng_columns_id=list(),name){
+  #print(list(files,rawDataSet, allDatasets, wrong_dataset, new_columns, worng_columns_id,name))
   nr=0
   for (i in names(rawDataSet)){
     nr=nrow(rawDataSet[[i]])+nr
@@ -517,7 +518,7 @@ imgtcleaning <- function(rawDataSet, name, allDatasets, files, cell_id=1, filter
 
 ######################################################################################################################################
 
-imgtfilter <- function(rawDataSet,name, allData, cell_id=1, filter_id=c(1,2,3,4,5,6,7,8,9,10), filter_out_char1=" P", filter_out_char2="[:punct:]|X", filter_in_char="productive", filterStart="^*",filterEnd="*$", identityLow=95, identityHigh=100, VGene="", JGene="", DGene="", lengthLow=7, lengthHigh=15,  aminoacid="CASSPPDTGELFF", seq1=1,seq2=2) {
+imgtfilter <- function(rawDataSet,name, allData, cell_id=1, filter_id=c(5,6,7,8,9,10), filter_out_char1=" P", filter_out_char2="[:punct:]|X", filter_in_char="productive", filterStart="^*",filterEnd="*$", identityLow=95, identityHigh=100, VGene="", JGene="", DGene="", lengthLow=7, lengthHigh=15,  aminoacid="CASSPPDTGELFF", seq1=1,seq2=2) {
   #logfile
   a="Filter ids "
   for (i in 1:length(filter_id)){
@@ -569,7 +570,7 @@ imgtfilter <- function(rawDataSet,name, allData, cell_id=1, filter_id=c(1,2,3,4,
   }
   
   # Apply the requested filters
-  
+
   if (any(filter_id==5)){
     # datapoint$1_Summary.txt.V.REGION.identity..  -> Filter in value between 95 and 100
     i=which(filter_id==5)
@@ -783,6 +784,9 @@ imgtfilter <- function(rawDataSet,name, allData, cell_id=1, filter_id=c(1,2,3,4,
   if (length(allData)>0){
     for (i in 1:length(name)){
       filtered_datasets[[name[i]]]<- allData %>% filter(allData$dataName==name[i])
+      if (save_tables_individually_filter_in){
+        write.table((filtered_datasets[[name[i]]]),paste0(output_folder,"/","filter_in_",name[i],".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
+      }
     }
   }
   
@@ -796,6 +800,10 @@ imgtfilter <- function(rawDataSet,name, allData, cell_id=1, filter_id=c(1,2,3,4,
   a=""
   for (i in 1:length(name)){
     a=paste(a,name[i])
+  }
+  
+  if (save_tables_individually_filter_in){
+    write.table((allData),paste0(output_folder,"/","filter_in_All Data",".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
   }
   
   confirm<-paste0("Datasets filtered: ",a,". Filters applied: ",b)
@@ -3234,8 +3242,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
   cat(paste0(ncol(input),"\t"), file=logFile, append=TRUE)
   cat(paste0(Sys.time(),"\t"), file=logFile, append=TRUE)
   
-  if (AAorNtAlignment=="aa") file="IMGT.gapped.AA.sequences."
-  else file="IMGT.gapped.nt.sequences."
+  if (AAorNtAlignment=="aa"){ file="IMGT.gapped.AA.sequences."
+  }else{ file="IMGT.gapped.nt.sequences."}
   
   if (region=="CDR3") region="JUNCTION"
   region=paste0(file,region)
@@ -3337,6 +3345,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
     region_alignment<-cbind(as.data.frame(cluster_id),as.data.frame(freq_cluster_id),Functionality="productive")
     
     region_alignment<-cbind(region_alignment
+                            ,Sequence.ID=input[[used_columns[["Summary"]][1]]]
                             ,J.GENE.and.allele=input[[used_columns[["Summary"]][8]]]
                             ,D.GENE.and.allele=input[[used_columns[["Summary"]][11]]]
                             ,V.GENE.and.allele=input[[used_columns[["Summary"]][3]]],region_split,stringsAsFactors = F)
@@ -3394,13 +3403,13 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
         }
       }
       
-      if ((ncol(region_alignment)-ncol(Tgermlines)-5)>0){
-        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-5, nrow = nrow(Tgermlines))
-        germlines=cbind("-",0,"germline","-","-",Tgermlines,a)
+      if ((ncol(region_alignment)-ncol(Tgermlines)-6)>0){
+        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-6, nrow = nrow(Tgermlines))
+        germlines=cbind("-",0, "germline", "-", "-","-",Tgermlines,a)
         colnames(germlines)=colnames(region_alignment)
         alignment_with_germline=rbind(germlines,region_alignment)  
       }else{
-        germlines=cbind("-",0,"germline","-","-",Tgermlines)
+        germlines=cbind("-",0,"germline","-", "-","-",Tgermlines)
         germlines=germlines[,1:ncol(region_alignment)]
         colnames(germlines)=colnames(region_alignment)
         
@@ -3412,7 +3421,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       germline<-c()
       output<-c()  
       a<-c()
-      XColumns=1:(ncol(region_alignment)-6)
+      XColumns=1:(ncol(region_alignment)-7)
       XColumns=as.character(XColumns)
       b=by(alignment_with_germline, alignment_with_germline$V.GENE.and.allele,
            function(y){
@@ -3422,8 +3431,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
              if (length(germline)>0 && length(productive)>0){
                a<-t(apply(y[productive,XColumns],1, function(x){x==y[germline,XColumns] & x!="."} )) #x: a row of input[count,XColumns]
                temp=replace(y[productive,XColumns],a==TRUE,"-")
-               temp2=cbind(y[productive,colnames(alignment_with_germline[,1:6])],temp)
-               output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:6]),XColumns)],temp2)
+               temp2=cbind(y[productive,colnames(alignment_with_germline[,1:7])],temp)
+               output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:7]),XColumns)],temp2)
              }
            }
       )
@@ -3487,8 +3496,11 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       row.names(region_split)<-NULL
       
       region_alignment<-cbind(as.data.frame(cluster_id),as.data.frame(freq_cluster_id),Functionality="productive")
-      
+      #print(tail(region_alignment))
+      #print(tail(input_tmp))
+      #print(tail(region_split))
       region_alignment<-cbind(region_alignment
+                              ,Sequence.ID=input_tmp[[used_columns[["Summary"]][1]]]
                               ,J.GENE.and.allele=input_tmp[[used_columns[["Summary"]][8]]]
                               ,D.GENE.and.allele=input_tmp[[used_columns[["Summary"]][11]]]
                               ,V.GENE.and.allele=input_tmp[[used_columns[["Summary"]][3]]],region_split,stringsAsFactors = F)
@@ -3535,8 +3547,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
           
         }
         
-        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-5, nrow = nrow(Tgermlines))
-        germlines=cbind("-",0,"germline","-","-",Tgermlines,a)
+        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-6, nrow = nrow(Tgermlines))
+        germlines=cbind("-",0,"germline","-", "-","-",Tgermlines,a)
         colnames(germlines)=colnames(region_alignment)
         
         alignment_with_germline=rbind(germlines,region_alignment)
@@ -3544,7 +3556,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
         germline<-c()
         output<-c()  
         a<-c()
-        XColumns=1:(ncol(region_alignment)-6)
+        XColumns=1:(ncol(region_alignment)-7)
         XColumns=as.character(XColumns)
         b=by(alignment_with_germline, alignment_with_germline$V.GENE.and.allele,
              function(y){
@@ -3554,8 +3566,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
                if (length(germline)>0 && length(productive)>0){
                  a<-t(apply(y[productive,XColumns],1, function(x){x==y[germline,XColumns] & x!="."} )) #x: a row of input[count,XColumns]
                  temp=replace(y[productive,XColumns],a==TRUE,"-")
-                 temp2=cbind(y[productive,colnames(alignment_with_germline[,1:6])],temp)
-                 output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:6]),XColumns)],temp2)
+                 temp2=cbind(y[productive,colnames(alignment_with_germline[,1:7])],temp)
+                 output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:7]),XColumns)],temp2)
                }
              }
         )
@@ -3841,7 +3853,7 @@ groupedAlignment<-function(alignment_allData,alignment_datasets,name,AAorNtAlign
   
   input<- data.table(alignment_allData)
   
-  XColumns=1:(ncol(alignment_allData)-5)
+  XColumns=1:(ncol(alignment_allData)-6)
   XColumns=as.character(XColumns)
   XColumns=c("V.GENE.and.allele","cluster_id","freq_cluster_id",XColumns)
   

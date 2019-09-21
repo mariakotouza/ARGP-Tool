@@ -3,12 +3,17 @@ enableBookmarking(store = "server")
 tmp_path<-getwd() #change it to "/tmp" for server
 
 #logfile
+if(!file.exists(paste0(tmp_path,"/log_files"))){ 
+  dir.create(paste0(tmp_path,"/log_files"))
+}
 logFile = paste0(tmp_path,"/log_files/log_file ",trunc(as.numeric(Sys.time())),".txt")
 cat(paste0("Function","\t","Parameters","\t","Num of input rows","\t","Num of input columns","\t","Start time","\t","End time","\t","Memory used"), file=logFile, append=FALSE, sep = "\n")
 
 use_only_useful_columns=T
 
-save_lists_for_bookmark=F  
+save_lists_for_bookmark=F
+
+save_tables_individually_filter_in <- F
 
 save_tables_individually=F
 if (save_tables_individually | save_lists_for_bookmark){

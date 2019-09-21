@@ -1886,7 +1886,7 @@ shinyServer(
       # When the button is clicked, wrap the code in a call to `withBusyIndicatorServer()`
       withBusyIndicatorServer("Execute_pipeline", {
         if (just_restored_session_public_clonotypes==F)
-          highly_sim_public_clonotypes_results<<-public_clonotypes(highly_sim,highly_sim_datasets,input$take_gene_highly_sim_public_clono,input$thr_highly_sim_public_clono,loaded_datasets,T)
+          highly_sim_public_clonotypes_results<<-public_clonotypes(highly_sim,highly_sim_datasets,input$take_gene_highly_sim_public_clono,T,input$thr_highly_sim_public_clono,loaded_datasets,T)
         
         just_restored_session_highly_sim_public_clonotypes<<-F
         #highly_sim_view_specific_clonotypes,highly_sim_clonotypes
