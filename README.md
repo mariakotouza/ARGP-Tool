@@ -68,4 +68,4 @@ The docker image of ARGP is available on DockerHub throught the following link:
 https://cloud.docker.com/u/mariakotouza/repository/docker/mariakotouza/argp.
 
 ##  License
-This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International  [LICENSE](LICENSE.md). Please see LICENSE for more details or visit https://creativecommons.org/licenses/by-nc-sa/4.0/.
+This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International  [LICENSE](License.md). Please see LICENSE for more details or visit https://creativecommons.org/licenses/by-nc-sa/4.0/.
