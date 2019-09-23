@@ -62,6 +62,8 @@ Rscript --vanilla make_options.R --help
 ```
 
 ##  Run ARGP as a Docker container
+The Dockerfile and the configurations for building the ARGP docker image are available in the *docker* folder.
+
 The docker image of ARGP is available on DockerHub throught the following link:
 https://cloud.docker.com/u/mariakotouza/repository/docker/mariakotouza/argp.
 
