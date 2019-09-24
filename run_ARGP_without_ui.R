@@ -31,6 +31,7 @@ run_ARGP <- function(datapath, filelist, cell, throughput, preselection, selecti
   option4 <- which(startsWith(preselection,"4"))
   filterStart=""
   filterEnd=""
+  filter_id <- as.numeric(preselection)
   if (length(option4) > 0){
     filter_id <- preselection[-option4]
     filter_id <- c(as.numeric(filter_id),4)
