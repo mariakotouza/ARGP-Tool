@@ -13,6 +13,9 @@ library('stringdist')
 library("parallel")
 
 tmp_path <- getwd()
+
+num_of_cores <- detectCores(all.tests = FALSE, logical = TRUE) #change this to the custom number of threads
+
 if(!file.exists(paste0(tmp_path,"/log_files"))){ 
   dir.create(paste0(tmp_path,"/log_files"))
 }

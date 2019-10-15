@@ -1419,6 +1419,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
   view_specific_clonotype_allData<-list()
   convergent_evolution<-c()
   convergent_evolution_list_allData<-list()
+  cluster_id<-c()
+  freq_cluster_id<-c()
+  
   if (length(gene)>0){
     if (allele==F){
       a2=strsplit(allData[[gene]],"[*]")  
@@ -1430,9 +1433,14 @@ clonotypes<- function(allData,allele,gene,junction,name){
     for (i in 1:nrow(distinctVGenes_CDR3)){
       inputVGenes_CDR3=which((allData[[gene]]==distinctVGenes_CDR3$Genes[i]) & (allData[[junction]]==distinctVGenes_CDR3$CDR3[i]))  
       view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]]=allData_initial[inputVGenes_CDR3,]
-      ce=view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]] %>% group_by(view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]][[used_columns[["IMGT.gapped.nt.sequences"]][9]]]) %>% summarise(convergent_evolution=n())
+      ce=view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]] %>% 
+        group_by(view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]][[used_columns[["IMGT.gapped.nt.sequences"]][9]]]) %>% 
+        summarise(convergent_evolution=n())
       convergent_evolution_list_allData[[as.character(i)]]=ce
       convergent_evolution=c(convergent_evolution,paste0("cluster ",i," : ",nrow(ce)))
+      
+      freq_cluster_id[inputVGenes_CDR3]=100*length(inputVGenes_CDR3)/nrow(allData_initial)
+      cluster_id[inputVGenes_CDR3]=i
     }
   }else{
     distinctVGenes_CDR3=allData %>% group_by(clonotype=allData[[junction]]) %>% summarise(n=n())
@@ -1443,6 +1451,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
       ce=view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]] %>% group_by(view_specific_clonotype_allData[[distinctVGenes_CDR3$clonotype[i]]][[used_columns[["IMGT.gapped.nt.sequences"]][9]]]) %>% summarise(convergent_evolution=n())
       convergent_evolution_list_allData[[as.character(i)]]=ce
       convergent_evolution=c(convergent_evolution,paste0("cluster ",i," : ",nrow(ce)))
+      
+      freq_cluster_id[inputVGenes_CDR3]=100*length(inputVGenes_CDR3)/nrow(allData_initial)
+      cluster_id[inputVGenes_CDR3]=i
     }
   }
   
@@ -1455,6 +1466,10 @@ clonotypes<- function(allData,allele,gene,junction,name){
     clono_write=cbind(clono_write,clono_allData[,c('N','Freq','Convergent Evolution')])
     colnames(clono_write) <- c('Genes','CDR3','N','Freq','Convergent Evolution')
     write.table((clono_write),paste0(output_folder,"/","Clonotypes_All Data",".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
+    
+    
+    write.table((cbind(allData_initial, "cluster_id"=cluster_id, "freq_cluster_id"=freq_cluster_id)),
+                paste0(output_folder,"/","filterin_clono_All_Data",".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
   }
   
   ############################################# clonotypes datasets 
@@ -1470,6 +1485,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
     convergent_evolution_list_datasets[[name[j]]]<-list()
     convergent_evolution_list_datasets_only_num[[name[j]]]<-c()
     data_initial=allData_initial %>% filter(allData$dataName==name[j])
+    cluster_id<-c()
+    freq_cluster_id<-c()
+    
     if (length(gene)>0){
       distinctVGenes_CDR3=data %>% group_by(Genes=data[[gene]], CDR3=data[[junction]]) %>% summarise(n=n())
       distinctVGenes_CDR3=distinctVGenes_CDR3[order(-distinctVGenes_CDR3$n),]
@@ -1481,6 +1499,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
         convergent_evolution_list_datasets[[name[j]]][[as.character(i)]]=ce
         convergent_evolution_list_datasets_only_num[[name[j]]]=c( convergent_evolution_list_datasets_only_num[[name[j]]],nrow(ce))
         convergent_evolution=c(convergent_evolution,paste0("cluster ",i," : ",nrow(ce)))
+        
+        freq_cluster_id[inputVGenes_CDR3]=100*length(inputVGenes_CDR3)/nrow(data_initial)
+        cluster_id[inputVGenes_CDR3]=i
       }
     }else{
       distinctVGenes_CDR3=data %>% group_by(clonotype=data[[junction]]) %>% summarise(n=n())
@@ -1492,6 +1513,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
         convergent_evolution_list_datasets[[name[j]]][[as.character(i)]]=ce
         convergent_evolution_list_datasets_only_num[[name[j]]]=c( convergent_evolution_list_datasets_only_num[[name[j]]],nrow(ce))
         convergent_evolution=c(convergent_evolution,paste0("cluster ",i," : ",nrow(ce)))
+        
+        freq_cluster_id[inputVGenes_CDR3]=100*length(inputVGenes_CDR3)/nrow(data_initial)
+        cluster_id[inputVGenes_CDR3]=i
       }
       
     }
@@ -1506,6 +1530,9 @@ clonotypes<- function(allData,allele,gene,junction,name){
       clono_write= cbind(clono_write,clono_datasets[[name[j]]][,c('N','Freq','Convergent Evolution')])
       colnames(clono_write) <- c('Genes','CDR3','N','Freq','Convergent Evolution')
       write.table((clono_write),paste0(output_folder,"/","Clonotypes_",name[j],".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
+    
+      write.table((cbind(data_initial, "cluster_id"=cluster_id, "freq_cluster_id"=freq_cluster_id)),
+                  paste0(output_folder,"/","filterin_clono_",name[j],".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
     }
     result=list()
     result[["clono_datasets"]]=clono_datasets[[name[j]]]
@@ -1517,7 +1544,7 @@ clonotypes<- function(allData,allele,gene,junction,name){
   } 
   
   if (Sys.info()[1] == "Windows"){
-    #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+    #cl <- makeCluster(num_of_cores)
     #clono_datasets=clusterApply(cl=cl,1:length(name),one_run)
     a=lapply(1:length(name),one_run)
     for (i in 1:length(name)){
@@ -1527,7 +1554,7 @@ clonotypes<- function(allData,allele,gene,junction,name){
       convergent_evolution_list_datasets_only_num[[name[i]]]=a[[i]]$convergent_evolution_list_datasets_only_num
     }
   }else{
-    a=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    a=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     for (i in 1:length(name)){
       view_specific_clonotype_datasets[[name[i]]]=a[[i]]$view_specific_clonotype_datasets
       clono_datasets[[name[i]]]=a[[i]]$clono_datasets
@@ -1848,7 +1875,7 @@ highly_similar_clonotypes<- function(clono_allData,clono_datasets,num_of_mismatc
     }
   }else{
     a=lapply(1:length(name),one_run)
-    #a=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    #a=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     for (i in 1:length(name)){
       highly_sim_clonotypes_allGroups_datasets[[name[i]]]=a[[i]]$highly_sim_clonotypes_allGroups_datasets
       clono_datasets[[name[i]]]=a[[i]]$clono_datasets
@@ -2055,11 +2082,11 @@ repertoires<- function(clono_allData,clono_datasets,allele,allele_clonotypes,gen
     } 
     
     if (Sys.info()[1] == "Windows"){
-      #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+      #cl <- makeCluster(num_of_cores)
       #Repertoires_datasets=clusterApply(cl=cl,1:length(name),one_run)
       Repertoires_datasets=lapply(1:length(name),one_run)
     }else{
-      Repertoires_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+      Repertoires_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     }
     
     names(Repertoires_datasets)=name
@@ -2121,11 +2148,11 @@ repertoires<- function(clono_allData,clono_datasets,allele,allele_clonotypes,gen
     } 
     
     if (Sys.info()[1] == "Windows"){
-      #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+      #cl <- makeCluster(num_of_cores)
       #freq_gene_name_datasets=clusterApply(cl=cl,1:length(name),one_run)
       freq_gene_name_datasets=lapply(1:length(name),one_run)
     }else{
-      freq_gene_name_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+      freq_gene_name_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     }
     
     names(freq_gene_name_datasets)=name
@@ -2220,7 +2247,7 @@ repertoires_highly_similar<- function(clono_allData,clono_datasets,allele,allele
     if (Sys.info()[1] == "Windows"){
       Repertoires_datasets=lapply(1:length(name),one_run)
     }else{
-      Repertoires_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+      Repertoires_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     }
     
     names(Repertoires_datasets)=name
@@ -2294,10 +2321,10 @@ repertoires_highly_similar<- function(clono_allData,clono_datasets,allele,allele
     } 
     
     if (Sys.info()[1] == "Windows"){
-      #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+      #cl <- makeCluster(num_of_cores)
       freq_gene_name_datasets=lapply(1:length(name),one_run)
     }else{
-      freq_gene_name_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+      freq_gene_name_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     }
     
     names(freq_gene_name_datasets)=name
@@ -2461,11 +2488,11 @@ Multiple_value_comparison<-function(clono_allData,clono_datasets,allele_clonotyp
         } 
         
         if (Sys.info()[1] == "Windows"){
-          #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+          #cl <- makeCluster(num_of_cores)
           #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
           multi_datasets=lapply(1:length(name),one_run)
         }else{
-          multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+          multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
         }
         
         names(multi_datasets)=name
@@ -2516,11 +2543,11 @@ Multiple_value_comparison<-function(clono_allData,clono_datasets,allele_clonotyp
         } 
         
         if (Sys.info()[1] == "Windows"){
-          #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+          #cl <- makeCluster(num_of_cores)
           #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
           multi_datasets=lapply(1:length(name),one_run)
         }else{
-          multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+          multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
         }
         
         names(multi_datasets)=name
@@ -2567,11 +2594,11 @@ Multiple_value_comparison<-function(clono_allData,clono_datasets,allele_clonotyp
       } 
       
       if (Sys.info()[1] == "Windows"){
-        #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+        #cl <- makeCluster(num_of_cores)
         #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
         multi_datasets=lapply(1:length(name),one_run)
       }else{
-        multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+        multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
       }
       
       names(multi_datasets)=name
@@ -2605,11 +2632,11 @@ Multiple_value_comparison<-function(clono_allData,clono_datasets,allele_clonotyp
   } 
   
   if (Sys.info()[1] == "Windows"){
-    #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+    #cl <- makeCluster(num_of_cores)
     #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
     Multiple_value_comparison_datasets=lapply(1:length(name),one_run)
   }else{
-    Multiple_value_comparison_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    Multiple_value_comparison_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
   }
   
   names(Multiple_value_comparison_datasets)=name
@@ -2711,11 +2738,11 @@ Multiple_value_comparison_highly_similar<-function(clono_allData,clono_datasets,
         } 
         
         if (Sys.info()[1] == "Windows"){
-          #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+          #cl <- makeCluster(num_of_cores)
           #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
           multi_datasets=lapply(1:length(name),one_run)
         }else{
-          multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+          multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
         }
         
         names(multi_datasets)=name
@@ -2776,11 +2803,11 @@ Multiple_value_comparison_highly_similar<-function(clono_allData,clono_datasets,
         } 
         
         if (Sys.info()[1] == "Windows"){
-          #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+          #cl <- makeCluster(num_of_cores)
           #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
           multi_datasets=lapply(1:length(name),one_run)
         }else{
-          multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+          multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
         }
         
         names(multi_datasets)=name
@@ -2844,11 +2871,11 @@ Multiple_value_comparison_highly_similar<-function(clono_allData,clono_datasets,
       } 
       
       if (Sys.info()[1] == "Windows"){
-        #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+        #cl <- makeCluster(num_of_cores)
         #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
         multi_datasets=lapply(1:length(name),one_run)
       }else{
-        multi_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+        multi_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
       }
       
       names(multi_datasets)=name
@@ -2882,11 +2909,11 @@ Multiple_value_comparison_highly_similar<-function(clono_allData,clono_datasets,
   } 
   
   if (Sys.info()[1] == "Windows"){
-    #cl <- makeCluster(detectCores(all.tests = FALSE, logical = TRUE))
+    #cl <- makeCluster(num_of_cores)
     #Multiple_value_comparison_datasets=clusterApply(cl=cl,1:length(name),one_run)
     Multiple_value_comparison_datasets=lapply(1:length(name),one_run)
   }else{
-    Multiple_value_comparison_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    Multiple_value_comparison_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
   }
   
   names(Multiple_value_comparison_datasets)=name
@@ -3242,31 +3269,33 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
   cat(paste0(ncol(input),"\t"), file=logFile, append=TRUE)
   cat(paste0(Sys.time(),"\t"), file=logFile, append=TRUE)
   
-  if (AAorNtAlignment=="aa"){ file="IMGT.gapped.AA.sequences."
-  }else{ file="IMGT.gapped.nt.sequences."}
+  if (AAorNtAlignment=="aa") file="IMGT.gapped.AA.sequences."
+  else file="IMGT.gapped.nt.sequences."
   
   if (region=="CDR3") region="JUNCTION"
   region=paste0(file,region)
+  
+  print(region)
   
   max_length_region=max(str_length(input[[region]]))
   
   if (Tcell==F && only_one_germline==F){
     type=strsplit(strsplit(as.character(input[[used_columns[["Summary"]][3]]][1])," ")[[1]][2],"V")[[1]][1]
     if ((type=="IGK") | (type=="IGL")){
-      germline_file=paste0("Germline sequences alignments ","IGK","V ",AAorNtAlignment,".csv")
-      Tgermlines=read.csv(paste0("param/",germline_file),sep=";",stringsAsFactors = F,colClasses = c("character"))
+      germline_file=paste0("param/","Germline sequences alignments ","IGK","V ",AAorNtAlignment,".csv")
+      Tgermlines=read.csv(germline_file,sep=";",stringsAsFactors = F,colClasses = c("character"))
       if (AAorNtAlignment=="aa"){
         Tgermlines[,113:117]="."
       }else{
         Tgermlines[,336:351]="."
       }
-      germline_file=paste0("Germline sequences alignments ","IGL","V ",AAorNtAlignment,".csv")
-      te=read.csv(paste0("param/",germline_file),sep=";",stringsAsFactors = F,colClasses = c("character"))
+      germline_file=paste0("param/","Germline sequences alignments ","IGL","V ",AAorNtAlignment,".csv")
+      te=read.csv(germline_file,sep=";",stringsAsFactors = F,colClasses = c("character"))
       colnames(Tgermlines)=colnames(te)
       Tgermlines=rbind(Tgermlines,te)
     }else{
-      germline_file=paste0("Germline sequences alignments ",type,"V ",AAorNtAlignment,".csv")
-      Tgermlines=read.csv(paste0("param/",germline_file),sep=";",stringsAsFactors = F,colClasses = c("character"))
+      germline_file=paste0("param/","Germline sequences alignments ",type,"V ",AAorNtAlignment,".csv")
+      Tgermlines=read.csv(germline_file,sep=";",stringsAsFactors = F,colClasses = c("character"))
     }
     
     Tgermlines=unique(Tgermlines)
@@ -3345,14 +3374,13 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
     region_alignment<-cbind(as.data.frame(cluster_id),as.data.frame(freq_cluster_id),Functionality="productive")
     
     region_alignment<-cbind(region_alignment
-                            ,Sequence.ID=input[[used_columns[["Summary"]][1]]]
                             ,J.GENE.and.allele=input[[used_columns[["Summary"]][8]]]
                             ,D.GENE.and.allele=input[[used_columns[["Summary"]][11]]]
                             ,V.GENE.and.allele=input[[used_columns[["Summary"]][3]]],region_split,stringsAsFactors = F)
     
     region_alignment$cluster_id=as.character(cluster_id)
     region_alignment$freq_cluster_id=as.character(freq_cluster_id)
- 
+    print(nrow(region_alignment))  
     if (FtopN){
       region_alignment=region_alignment %>% filter(as.numeric(as.character(region_alignment$cluster_id))<=topNClono | region_alignment$cluster_id=="-")
     }
@@ -3363,7 +3391,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
     
     #region_alignment=region_alignment %>% filter(Functionality=="productive")
     #region_alignment$Functionality="productive"
-
+    print(nrow(region_alignment))
     if (only_one_germline){
       germline<-strsplit(germline,"")[[1]]
       germline<-data.frame(t(germline),stringsAsFactors = F)
@@ -3380,14 +3408,19 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       #add the first and the second columns
       temp2=cbind(alignment_with_germline[2:nrow(alignment_with_germline),1:2],temp)
       #add the last columns
+      print((length(alignment_with_germline)+1):length(region_alignment))
       if ((length(alignment_with_germline)+1)<length(region_alignment))
         temp2=rbind(temp2,region_alignment[,(length(alignment_with_germline)+1):length(region_alignment)])
+      print(temp2)
       #add the germline (first row)
       germline_new=germline
+      print(germline_new)
       #germline_new[,(length(germline)+1):length(region_alignment)]="."
       #print(germline_new)
       colnames(germline_new)<-colnames(temp2)
       output=rbind(germline_new[1,],temp2)
+      print(output)
+      
     }else{
       
       if (use_genes_germline){
@@ -3403,13 +3436,13 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
         }
       }
       
-      if ((ncol(region_alignment)-ncol(Tgermlines)-6)>0){
-        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-6, nrow = nrow(Tgermlines))
-        germlines=cbind("-",0, "germline", "-", "-","-",Tgermlines,a)
+      if ((ncol(region_alignment)-ncol(Tgermlines)-5)>0){
+        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-5, nrow = nrow(Tgermlines))
+        germlines=cbind("-",0,"germline","-","-",Tgermlines,a)
         colnames(germlines)=colnames(region_alignment)
         alignment_with_germline=rbind(germlines,region_alignment)  
       }else{
-        germlines=cbind("-",0,"germline","-", "-","-",Tgermlines)
+        germlines=cbind("-",0,"germline","-","-",Tgermlines)
         germlines=germlines[,1:ncol(region_alignment)]
         colnames(germlines)=colnames(region_alignment)
         
@@ -3418,10 +3451,11 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       
       df3=alignment_with_germline
       
+      print(nrow(alignment_with_germline))
       germline<-c()
       output<-c()  
       a<-c()
-      XColumns=1:(ncol(region_alignment)-7)
+      XColumns=1:(ncol(region_alignment)-6)
       XColumns=as.character(XColumns)
       b=by(alignment_with_germline, alignment_with_germline$V.GENE.and.allele,
            function(y){
@@ -3431,8 +3465,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
              if (length(germline)>0 && length(productive)>0){
                a<-t(apply(y[productive,XColumns],1, function(x){x==y[germline,XColumns] & x!="."} )) #x: a row of input[count,XColumns]
                temp=replace(y[productive,XColumns],a==TRUE,"-")
-               temp2=cbind(y[productive,colnames(alignment_with_germline[,1:7])],temp)
-               output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:7]),XColumns)],temp2)
+               temp2=cbind(y[productive,colnames(alignment_with_germline[,1:6])],temp)
+               output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:6]),XColumns)],temp2)
              }
            }
       )
@@ -3496,11 +3530,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       row.names(region_split)<-NULL
       
       region_alignment<-cbind(as.data.frame(cluster_id),as.data.frame(freq_cluster_id),Functionality="productive")
-      #print(tail(region_alignment))
-      #print(tail(input_tmp))
-      #print(tail(region_split))
+      
       region_alignment<-cbind(region_alignment
-                              ,Sequence.ID=input_tmp[[used_columns[["Summary"]][1]]]
                               ,J.GENE.and.allele=input_tmp[[used_columns[["Summary"]][8]]]
                               ,D.GENE.and.allele=input_tmp[[used_columns[["Summary"]][11]]]
                               ,V.GENE.and.allele=input_tmp[[used_columns[["Summary"]][3]]],region_split,stringsAsFactors = F)
@@ -3520,6 +3551,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
       }
       
       if (only_one_germline){
+        print(germline)
         alignment_with_germline<-rbind(germline,region_alignment[,1:length(germline)])
         #for (i in 3:length(alignment_with_germline)){
         #  alignment_with_germline[,i] = factor(alignment_with_germline[,i], levels=c(levels(alignment_with_germline[,i]), "-"))
@@ -3547,8 +3579,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
           
         }
         
-        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-6, nrow = nrow(Tgermlines))
-        germlines=cbind("-",0,"germline","-", "-","-",Tgermlines,a)
+        a=matrix(".",ncol=ncol(region_alignment)-ncol(Tgermlines)-5, nrow = nrow(Tgermlines))
+        germlines=cbind("-",0,"germline","-","-",Tgermlines,a)
         colnames(germlines)=colnames(region_alignment)
         
         alignment_with_germline=rbind(germlines,region_alignment)
@@ -3556,7 +3588,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
         germline<-c()
         output<-c()  
         a<-c()
-        XColumns=1:(ncol(region_alignment)-7)
+        XColumns=1:(ncol(region_alignment)-6)
         XColumns=as.character(XColumns)
         b=by(alignment_with_germline, alignment_with_germline$V.GENE.and.allele,
              function(y){
@@ -3566,8 +3598,8 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
                if (length(germline)>0 && length(productive)>0){
                  a<-t(apply(y[productive,XColumns],1, function(x){x==y[germline,XColumns] & x!="."} )) #x: a row of input[count,XColumns]
                  temp=replace(y[productive,XColumns],a==TRUE,"-")
-                 temp2=cbind(y[productive,colnames(alignment_with_germline[,1:7])],temp)
-                 output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:7]),XColumns)],temp2)
+                 temp2=cbind(y[productive,colnames(alignment_with_germline[,1:6])],temp)
+                 output<<-rbind(output,y[germline,c(colnames(alignment_with_germline[,1:6]),XColumns)],temp2)
                }
              }
         )
@@ -3588,7 +3620,7 @@ alignment<-function(input,region,germline,name,only_one_germline,use_genes_germl
     if (Sys.info()[1] == "Windows"){
       alignment_datasets=lapply(1:length(name),one_run)
     }else{
-      alignment_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+      alignment_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
     }
     
     names(alignment_datasets)=name
@@ -3817,7 +3849,7 @@ mutations<-function(align,align_datasets,thr,AAorNtMutations,name,topNClono,Ftop
   if (Sys.info()[1] == "Windows"){
     mutation_change_datasets=lapply(1:length(name),one_run)
   }else{
-    mutation_change_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    mutation_change_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
   }
   
   names(mutation_change_datasets)=name
@@ -3879,7 +3911,7 @@ groupedAlignment<-function(alignment_allData,alignment_datasets,name,AAorNtAlign
   if (Sys.info()[1] == "Windows"){
     grouped_alignment_datasets=lapply(1:length(name),one_run)
   }else{
-    grouped_alignment_datasets=mclapply(1:length(name),one_run,mc.cores = detectCores(all.tests = FALSE, logical = TRUE), mc.preschedule = TRUE)
+    grouped_alignment_datasets=mclapply(1:length(name),one_run,mc.cores = num_of_cores, mc.preschedule = TRUE)
   }
   
   names(grouped_alignment_datasets)=name

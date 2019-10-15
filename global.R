@@ -1,6 +1,10 @@
+library("parallel")
+
 enableBookmarking(store = "server")
 
 tmp_path<-getwd() #change it to "/tmp" for server
+
+num_of_cores <- detectCores(all.tests = FALSE, logical = TRUE) #change this to the custom number of threads
 
 #logfile
 if(!file.exists(paste0(tmp_path,"/log_files"))){ 

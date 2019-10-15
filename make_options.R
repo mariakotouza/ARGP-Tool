@@ -44,7 +44,7 @@ option_list <- list(
   make_option(
     opt_str=c("-e","--preselection"),
     action="store",
-    default="1,2,3,4C|D:F|D",
+    default="1,2,3,4C:F|W",
     help=paste0(
       "Preselection options:\n",
       "1. Only take into account Functional V-Gene\n",
@@ -74,7 +74,7 @@ option_list <- list(
   make_option(
     opt_str=c("-g","--identity_range"),
     action="store",
-    default="95:100",
+    default="85:100",
     help=paste0(
       "V-REGION identity %Low and %High\n",
       "Use semicolon ':' to separate identity low and high (default %default) \n"
@@ -127,7 +127,7 @@ option_list <- list(
   make_option(
     opt_str=c("-n","--pipeline"),
     action="store",
-    default="1,2",
+    default="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
     help=paste0(
       "Pipeline options:\n",
       "1. Clonotypes Computation \n",
@@ -171,7 +171,7 @@ option_list <- list(
   make_option(
     opt_str=c("-p","--highly_sim_params"),
     action="store",
-    default="6-1 7-1 8-1 9-2 12-2,1,Yes",
+    default="6-1 7-1 8-1 9-2 10-2 11-2 12-2 13-2 14-2 15-3 16-3 17-3 18-3 19-3 20-3 21-3 22-4 23-4 25-4 26-4 27-4 28-4 29-4 30-4,1,Yes",
     help=paste0(
       "Select number of missmatches, the theshold of the clonotype frequency and whether you want to take gene into account\n",
       "Use dashes '-' to show the length of the cdr3 sequences and the number of allowed missmatches and spaces ' ' to separate. For the cdr3 lengths that the number of missmatches are not specified the default value that will be used is 1.  \n",
@@ -233,7 +233,7 @@ option_list <- list(
   make_option(
     opt_str=c("-u","--multiple_values_params"),
     action="store",
-    default="1:7,1:11",
+    default="1:3,1:7",
     help=paste0(
       "Multiple value comparison  \n",
       "Options\n",
@@ -255,7 +255,7 @@ option_list <- list(
   make_option(
     opt_str=c("-v","--alignment_params"),
     action="store",
-    default="1,both,1,2:20",
+    default="1,aa,2,2:20",
     help=paste0(
       "Alignment parameters:\n",
       "Region for Alignment: 1. V.D.J.REGION or 2. V.J.REGION\n",
@@ -270,7 +270,7 @@ option_list <- list(
   make_option(
     opt_str=c("-w","--mutations_params"),
     action="store",
-    default="both,0.5,0.5,2:20",
+    default="aa,0.5,0.5,2:20",
     help=paste0(
       "Somatic hypermutations parameters:\n",
       "AA or Nt: Select aa or nt or both\n",
@@ -288,7 +288,7 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list));
 
 filelist <- strsplit(opt$filelist, ",")[[1]]
-  
+
 source("run_ARGP_without_ui.R")
 run_ARGP(datapath=opt$datapath, filelist=filelist, cell=opt$cell, throughput=opt$throughput, preselection=opt$preselection, selection=opt$selection, 
          identity_range=opt$identity_range, vgenes=opt$vgenes, dgenes=opt$dgenes, jgenes=opt$jgenes, cdr3_length_range=opt$cdr3_length_range, aminoacid=opt$aminoacid,
