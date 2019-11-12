@@ -24,14 +24,12 @@ RUN wget --no-verbose https://s3.amazonaws.com/rstudio-shiny-server-os-build/ubu
 RUN R -e "install.packages(c('shiny','shinyFiles', 'shinyjs', 'shinyBS','DT','plyr','dplyr','pryr','data.table','stringr','tidyr','xtable','plot3D','gridExtra','stringdist','plotly','BiocManager','optparse'), repos='http://cran.rstudio.com/')"
 RUN R -e "BiocManager::install(c('Biostrings', 'motifStack'))"
 
-# Copy configuration files into the Docker image
-COPY shiny-server.conf  /etc/shiny-server/shiny-server.conf
-COPY /app /srv/shiny-server/
+# copy the app to the image
+RUN mkdir /root/app
+COPY app /root/app
 
-# Make the ShinyApp available at port 80
-EXPOSE 80
+COPY Rprofile.site /usr/lib/R/etc/
 
-# Copy further configuration files into the Docker image
-COPY shiny-server.sh /usr/bin/shiny-server.sh
+EXPOSE 3838
 
-CMD ["/usr/bin/shiny-server.sh"]
+CMD ["R", "-e", "shiny::runApp('/root/app')"]
