@@ -1643,6 +1643,17 @@ shinyServer(
           temp=temp[,c("Gene","CDR3","N","Freq","prev_cluster")]
           if (save_tables_individually){
             write.table(temp, paste0(output_folder,"/","highly_sim_all_clonotypes_",d,".txt"), sep = "\t", row.names = FALSE, col.names = TRUE)
+            
+            # save filter in + highly clono id
+            all_filter <- read.csv(paste0(output_folder,"/","filterin_clono_",d,".txt"), sep = "\t", stringsAsFactors = F)
+            all_filter$highly_cluster_id <- 0
+            all_filter$highly_freq_cluster_id <- 0
+            for (h in 1:nrow(temp)){
+              prev <- as.numeric(strsplit(temp$prev_cluster[h], " ")[[1]])
+              all_filter$highly_cluster_id[which(all_filter$cluster_id %in% prev)] <- h
+              all_filter$highly_freq_cluster_id[which(all_filter$cluster_id %in% prev)] <- temp$Freq
+            }
+            write.table(all_filter, paste0(output_folder,"/","filterin_highly_clono_",d,".txt"), sep = "\t", row.names = FALSE, col.names = TRUE)
           }
         }
         
@@ -1664,6 +1675,18 @@ shinyServer(
           }
           temp=temp[,c("Gene","CDR3","N","Freq","prev_cluster")]
           write.table(temp, paste0(output_folder,"/","highly_sim_all_clonotypes_","All Data",".txt"),sep = "\t", row.names = FALSE, col.names = TRUE)
+        
+          # save filter in + highly clono id
+          all_filter <- read.csv(paste0(output_folder,"/","filterin_clono_","All_Data",".txt"), sep = "\t", stringsAsFactors = F)
+          all_filter$highly_cluster_id <- 0
+          all_filter$highly_freq_cluster_id <- 0
+          for (h in 1:nrow(temp)){
+            prev <- as.numeric(strsplit(temp$prev_cluster[h], " ")[[1]])
+            all_filter$highly_cluster_id[which(all_filter$cluster_id %in% prev)] <- h
+            all_filter$highly_freq_cluster_id[which(all_filter$cluster_id %in% prev)] <- temp$Freq
+          }
+          write.table(all_filter, paste0(output_folder,"/","filterin_highly_clono_","All_Data",".txt"), sep = "\t", row.names = FALSE, col.names = TRUE)
+          
         }
         
         output$highlySimAllClonoTable <- renderDataTable({
