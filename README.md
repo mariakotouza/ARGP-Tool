@@ -1,6 +1,6 @@
-# Antigen receptor gene profiler (ARGP)
+# T-cell Receptor/Immunoglobulin Profiler (TRIP)
 
-ARGP is a software framework that provides analytics services on NGS Data, implemented in [R Shiny](https://shiny.rstudio.com/).
+TRIP is a software framework that provides analytics services on NGS Data, implemented in [R Shiny](https://shiny.rstudio.com/).
 
 ## Installation
 
@@ -29,10 +29,10 @@ biocLite("motifStack")
 - If you want to use only those attributes of the tables that are necessary to run the pipeline, you need to set the variable use_only_useful_columns equal to True, otherwise you set it equal to False. You can see those attributes in the param/ used_columns.csv and param/ used_columns_only_useful.csv files accordingly. 
 
 
-You may find a detailed documentation of the ARGP tool at [Wiki](https://github.com/mariakotouza/ARGP-Tool/wiki/Antigen-receptor-gene-profiler-(ARGP)). 
+You may find a detailed documentation of the TRIP tool at [Wiki](https://github.com/mariakotouza/TRIP-Tool/wiki/Antigen-receptor-gene-profiler-(TRIP)). 
 
-##  Run ARGP as an R script-based tool 
-In order to run ARGP as a script-based tool, except from the packages that are described above, the user need to install the optparse package.
+##  Run TRIP as an R script-based tool 
+In order to run TRIP as a script-based tool, except from the packages that are described above, the user need to install the optparse package.
 
 ```
 install.packages("optparse") 
@@ -61,10 +61,10 @@ All the available and the deafault parameters are available in the **make_option
 Rscript --vanilla make_options.R --help
 ```
 
-##  Run ARGP as a Docker container
-The Dockerfile and the configurations needed for building the ARGP docker image are available in the *docker* folder.
+##  Run TRIP as a Docker container
+The Dockerfile and the configurations needed for building the TRIP docker image are available in the *docker* folder.
 
-The docker image of ARGP is available on DockerHub throught the following link:
+The docker image of TRIP is available on DockerHub throught the following link:
 https://cloud.docker.com/u/mariakotouza/repository/docker/mariakotouza/argp.
 
 ##  License
