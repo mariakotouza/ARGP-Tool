@@ -2,6 +2,11 @@
 
 TRIP is a software framework that provides analytics services on NGS Data, implemented in [R Shiny](https://shiny.rstudio.com/).
 
+## Update Feb 2021
+
+For the latest version of the tool, please follow the link available through the [bio.tools registry entry](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler), as this repository is not being actively maintained.
+
+
 ## Installation
 
 #### R Shiny packages
